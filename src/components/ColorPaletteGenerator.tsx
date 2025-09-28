@@ -5,6 +5,8 @@ import {AboutDialog} from "@/components/AboutDialog.tsx";
 import {useTheme} from "@/components/theme/useTheme.ts";
 import {MagicalText} from 'react-halloween';
 
+const colors = ['#9084FF','#E40078']
+
 // Color space conversion utilities
 const RGBtoHSL = (r: number, g: number, b: number): [number, number, number] => {
   r /= 255;
@@ -13,7 +15,8 @@ const RGBtoHSL = (r: number, g: number, b: number): [number, number, number] => 
 
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
 
   if (max !== min) {
     const d = max - min;
@@ -54,8 +57,8 @@ const HSLtoRGB = (h: number, s: number, l: number): [number, number, number] => 
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 };
 
-const getBucket = (r: number, g: number, b: number): string => {
-  const bucketSize = 32;
+const getBucket = (r: number, g: number, b: number, isHighVariety: boolean): string => {
+  const bucketSize = isHighVariety ? 64 : 32;
   const rBucket = Math.floor(r / bucketSize) * bucketSize;
   const gBucket = Math.floor(g / bucketSize) * bucketSize;
   const bBucket = Math.floor(b / bucketSize) * bucketSize;
@@ -88,7 +91,8 @@ const ColorPaletteGenerator: React.FC = () => {
   const [hueOffset, setHueOffset] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [, setIsProcessing] = useState(false);// TODO: use processing variable?
-  const [useMuller, setUseMuller] = useState(false);
+  const [isMuller, setIsMuller] = useState(false);
+  const [isHighVariety, setIsHighVariety] = useState(false);
   const [numColors, setNumColors] = useState(10);
   const { theme, setTheme } = useTheme();
 
@@ -102,7 +106,7 @@ const ColorPaletteGenerator: React.FC = () => {
     window.location.href = "https://patorjk.com/";
   }
 
-  const analyzeImage = (imgElement: HTMLImageElement) => {
+  const analyzeImage = useCallback((imgElement: HTMLImageElement) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
 
@@ -134,7 +138,7 @@ const ColorPaletteGenerator: React.FC = () => {
       const g = data[i + 1];
       const b = data[i + 2];
 
-      const bucket = getBucket(r, g, b);
+      const bucket = getBucket(r, g, b, isHighVariety);
 
       if (!bucketMap[bucket]) {
         bucketMap[bucket] = { count: 0, r: 0, g: 0, b: 0 };
@@ -150,8 +154,8 @@ const ColorPaletteGenerator: React.FC = () => {
       .sort((a, b) => b[1].count - a[1].count);
 
     setBuckets(sortedBuckets);
-    generatePalettes(sortedBuckets, numColors, useMuller, hueOffset);
-  };
+    generatePalettes(sortedBuckets, numColors, isMuller, hueOffset);
+  },[hueOffset, isHighVariety, isMuller, numColors, setBuckets]);
 
   const generatePalettes = (
     bucketData: [string, BucketData][],
@@ -161,20 +165,22 @@ const ColorPaletteGenerator: React.FC = () => {
   ) => {
     const limitedBuckets = bucketData.slice(0, Math.min(count, bucketData.length));
 
-    const createPalette = (hOffsetValue: number, useMullerAlg: boolean = false): ColorData[] => {
+    const createPalette = (hOffsetValue: number, isMullerAlg: boolean = false): ColorData[] => {
       const mullerL = [0.65, 0.75, 0.9, 0.75, 0.65, 0.5, 0.35, 0.2, 0.35, 0.5];
       const mullerH = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       return limitedBuckets.map(([_, bucket]) => {
         let r = bucket.r / bucket.count;
         let g = bucket.g / bucket.count;
         let b = bucket.b / bucket.count;
 
+        // eslint-disable-next-line prefer-const
         let [h, s, l] = RGBtoHSL(r, g, b);
         h = (h + hOffsetValue + hOffset) % 1;
         if (h < 0) h += 1;
 
-        if (useMullerAlg) {
+        if (isMullerAlg) {
           const mullerStep = 0.075;
           let smallestDiff = 10;
           let closestIndex = 2;
@@ -225,9 +231,9 @@ const ColorPaletteGenerator: React.FC = () => {
 
   useEffect(() => {
     if (buckets.length > 0) {
-      generatePalettes(buckets, numColors, useMuller, hueOffset);
+      generatePalettes(buckets, numColors, isMuller, hueOffset);
     }
-  }, [numColors, useMuller, hueOffset]);
+  }, [numColors, isMuller, hueOffset,isHighVariety, buckets]);
 
   const handleImageUpload = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return;
@@ -244,7 +250,7 @@ const ColorPaletteGenerator: React.FC = () => {
       img.src = e.target?.result as string;
     };
     reader.readAsDataURL(file);
-  }, []);
+  }, [analyzeImage]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -286,7 +292,7 @@ const ColorPaletteGenerator: React.FC = () => {
 
         <div className="text-center mb-12">
           <h1 className={`text-5xl font-bold ${darkMode ? 'bg-gradient-to-r from-indigo-400 to-purple-400' : 'bg-gradient-to-r from-indigo-600 to-purple-600'} bg-clip-text text-transparent mb-3`}>
-            <MagicalText text={"Color Palette Generator"} showAdornments={false} />
+            <MagicalText text={"Color Palette Generator"} colors={colors} showAdornments={false} animationTime={20}/>
           </h1>
           <p className={`${textSecondaryClass} text-lg`}>
             Upload an image to extract its dominant colors
@@ -362,11 +368,22 @@ const ColorPaletteGenerator: React.FC = () => {
                       <label className={`flex items-center gap-2 ${textClass} font-medium cursor-pointer`}>
                         <input
                           type="checkbox"
-                          checked={useMuller}
-                          onChange={(e) => setUseMuller(e.target.checked)}
+                          checked={isMuller}
+                          onChange={(e) => setIsMuller(e.target.checked)}
                           className="w-5 h-5 rounded"
                         />
                         Use Muller Colors algorithm
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <label className={`flex items-center gap-2 ${textClass} font-medium cursor-pointer`}>
+                        <input
+                          type="checkbox"
+                          checked={isHighVariety}
+                          onChange={(e) => setIsHighVariety(e.target.checked)}
+                          className="w-5 h-5 rounded"
+                        />
+                        Use higher variety algorithm
                       </label>
                     </div>
                   </div>

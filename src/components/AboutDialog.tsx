@@ -78,7 +78,7 @@ export function AboutDialog({textClass, cardClass}:AboutDialogProps) {
           <DialogTrigger asChild>
             {button}
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="dark:bg-dark-dialog-background sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>About This App</DialogTitle>
               <DialogDescription>
@@ -103,7 +103,7 @@ export function AboutDialog({textClass, cardClass}:AboutDialogProps) {
       <DrawerTrigger asChild>
         {button}
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className={"dark:bg-dark-dialog-background"}>
         <DrawerHeader className="text-left">
           <DrawerTitle>About This App</DrawerTitle>
           <DrawerDescription>
