@@ -1,7 +1,9 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Upload, X, RefreshCw, Home, Info, Sun, Moon } from 'lucide-react';
+import { Upload, X, RefreshCw, Home, Sun, Moon } from 'lucide-react';
 import {AboutDialog} from "@/components/AboutDialog.tsx";
+import {useTheme} from "@/components/theme/useTheme.ts";
+import {MagicalText} from 'react-halloween';
 
 // Color space conversion utilities
 const RGBtoHSL = (r: number, g: number, b: number): [number, number, number] => {
@@ -88,13 +90,17 @@ const ColorPaletteGenerator: React.FC = () => {
   const [, setIsProcessing] = useState(false);// TODO: use processing variable?
   const [useMuller, setUseMuller] = useState(false);
   const [numColors, setNumColors] = useState(10);
-  const [showAbout, setShowAbout] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const { theme, setTheme } = useTheme();
 
-  useEffect(() => {
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setDarkMode(isDark);
-  }, []);
+  const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+  const darkMode = theme === 'dark' || theme === 'system' && mediaQuery.matches;
+  const setDarkMode = useCallback((value: boolean) => {
+    setTheme(value ? 'dark' : 'light');
+  }, [setTheme]);
+
+  const goHome = () => {
+    window.location.href = "https://patorjk.com/";
+  }
 
   const analyzeImage = (imgElement: HTMLImageElement) => {
     const canvas = document.createElement('canvas');
@@ -280,7 +286,7 @@ const ColorPaletteGenerator: React.FC = () => {
 
         <div className="text-center mb-12">
           <h1 className={`text-5xl font-bold ${darkMode ? 'bg-gradient-to-r from-indigo-400 to-purple-400' : 'bg-gradient-to-r from-indigo-600 to-purple-600'} bg-clip-text text-transparent mb-3`}>
-            Color Palette Generator
+            <MagicalText text={"Color Palette Generator"} showAdornments={false} />
           </h1>
           <p className={`${textSecondaryClass} text-lg`}>
             Upload an image to extract its dominant colors
@@ -368,7 +374,7 @@ const ColorPaletteGenerator: React.FC = () => {
 
                 <div className={`${cardClass} rounded-2xl p-6 shadow-lg`}>
                   <h3 className={`text-xl font-semibold ${textClass} mb-4`}>Normal Palette</h3>
-                  <div className="grid grid-cols-5 gap-4">
+                  <div className="grid grid-cols-5 max-sm:grid-cols-3 gap-4">
                     {normalPalette.map((color, idx) => (
                       <div key={idx} className="text-center">
                         <div
@@ -383,7 +389,7 @@ const ColorPaletteGenerator: React.FC = () => {
 
                 <div className={`${cardClass} rounded-2xl p-6 shadow-lg`}>
                   <h3 className={`text-xl font-semibold ${textClass} mb-4`}>Complementary Palette</h3>
-                  <div className="grid grid-cols-5 gap-4">
+                  <div className="grid grid-cols-5 max-sm:grid-cols-3 gap-4">
                     {complementaryPalette.map((color, idx) => (
                       <div key={idx} className="text-center">
                         <div
@@ -415,12 +421,12 @@ const ColorPaletteGenerator: React.FC = () => {
           </div>
         )}
 
-        <div className="mt-12 text-center">
+        <div className="mt-12 text-center flex flex-cols align-center justify-center space-x-4">
 
           <AboutDialog cardClass={cardClass} textClass={textClass} />
 
           <button
-            onClick={() => setShowAbout(!showAbout)}
+            onClick={() => goHome()}
             className={`inline-flex items-center gap-2 px-6 py-3 ${cardClass} rounded-lg shadow-lg hover:opacity-80 transition-opacity`}
           >
             <Home className={`w-5 h-5 ${textClass}`} />
@@ -429,37 +435,12 @@ const ColorPaletteGenerator: React.FC = () => {
 
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className={`p-2 rounded-lg ${cardClass} shadow-lg hover:opacity-80 transition-opacity`}
+            className={`px-6 py-3 rounded-lg ${cardClass} shadow-lg hover:opacity-80 transition-opacity flex flex-cols items-center gap-2 justify-center`}
           >
-            {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-indigo-600" />}
+            {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-indigo-600" />} Theme
           </button>
         </div>
 
-        {showAbout && (
-          <div className={`mt-6 ${cardClass} rounded-2xl p-8 shadow-lg`}>
-            <h2 className={`text-2xl font-bold ${textClass} mb-4`}>About This App</h2>
-            <div className={`${textSecondaryClass} space-y-4`}>
-              <p>
-                This Color Palette Generator analyzes images to extract their dominant colors and create harmonious color schemes.
-              </p>
-              <p>
-                <strong className={textClass}>How it works:</strong>
-              </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>The app analyzes each pixel and groups similar colors into "buckets"</li>
-                <li>It then identifies the most frequently occurring colors</li>
-                <li>Colors are converted through HSL color space for better manipulation</li>
-                <li>A complementary palette is generated by shifting the hue by 180 degrees</li>
-              </ul>
-              <p>
-                <strong className={textClass}>Muller Colors:</strong> An experimental algorithm that adjusts colors to align with predetermined harmonious hue and lightness values, creating more aesthetically pleasing palettes.
-              </p>
-              <p>
-                <strong className={textClass}>Use Cases:</strong> Perfect for web designers, digital artists, and anyone looking to extract color schemes from photographs, artwork, or design inspiration.
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

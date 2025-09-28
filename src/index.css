@@ -22,6 +22,10 @@ body {
   justify-content: center;
 }
 
+button:hover {
+  cursor: pointer;
+}
+
 #root {
   width: 100%;
 }

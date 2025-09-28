@@ -1,4 +1,4 @@
-import {createContext, useEffect, useState} from "react"
+import {createContext, useEffect, useMemo, useState} from "react"
 
 type Theme = "dark" | "light" | "system"
 
@@ -60,13 +60,13 @@ export function ThemeProvider({
     return () => mediaQuery.removeEventListener("change", handleChange)
   }, [theme])
 
-  const value = {
+  const value = useMemo(() => ({
     theme,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme)
       setTheme(theme)
     },
-  }
+  }), [theme, storageKey]);
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
