@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import {cssColorToRgba} from "../../../color-fader/src/color-parser.ts";
 import { Checkbox } from "@/components/ui/checkbox"
 import {type RgbaColor, rgbaToHsla} from "../../../color-fader";
+import { toast } from "sonner"
 
 const colors = ['#9084FF','#E40078']
 
@@ -288,6 +289,21 @@ const ColorPaletteGenerator: React.FC = () => {
     }
   }, [colorType]);
 
+  const copyColor = useCallback(async (hexString: string) => {
+    const colorValue = displayColor(hexString);
+    try {
+      await navigator.clipboard.writeText(colorValue);
+      toast(`"${colorValue}" was copied to the clipboard!`, {
+        style: {
+          backgroundColor: '#4CAF50', // Example green color
+          color: 'white', // Example white text color for contrast
+        },
+      });
+    } catch (err: unknown) {
+      console.error('Failed to copy text: ', err);
+    }
+  }, [displayColor]);
+
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -412,7 +428,7 @@ const ColorPaletteGenerator: React.FC = () => {
                         <div className="flex  gap-3">
                           <Checkbox id="muller"                             checked={isMuller}
                                     onCheckedChange={(checked:boolean) => setIsMuller(checked)} />
-                          <Label htmlFor="muller" className={'cursor-pointer'}>Create new scratch file from selection</Label>
+                          <Label htmlFor="muller" className={'cursor-pointer'}>Use Müller Colors algorithm</Label>
                         </div>
                       </div>
                       <div className="flex  gap-4">
@@ -452,7 +468,8 @@ const ColorPaletteGenerator: React.FC = () => {
                     {normalPalette.map((color, idx) => (
                       <div key={idx} className="text-center">
                         <div
-                          className="w-full h-20 rounded-lg shadow-md mb-2"
+                          onClick={() => copyColor(color.hex)}
+                          className="w-full h-20 rounded-lg shadow-md mb-2 cursor-pointer"
                           style={{ backgroundColor: color.hex }}
                         />
                         <p className={`text-sm font-mono ${textSecondaryClass}`}>{displayColor(color.hex)}</p>
@@ -467,7 +484,8 @@ const ColorPaletteGenerator: React.FC = () => {
                     {complementaryPalette.map((color, idx) => (
                       <div key={idx} className="text-center">
                         <div
-                          className="w-full h-20 rounded-lg shadow-md mb-2"
+                          onClick={() => copyColor(color.hex)}
+                          className="w-full h-20 rounded-lg shadow-md mb-2 cursor-pointer"
                           style={{ backgroundColor: color.hex }}
                         />
                         <p className={`text-sm font-mono ${textSecondaryClass}`}>{displayColor(color.hex)}</p>

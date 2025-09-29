@@ -40,14 +40,13 @@ export function AboutDialog({textClass, cardClass}:AboutDialogProps) {
       </p>
       <ul className="list-disc list-inside space-y-2 ml-4">
         <li>The app analyzes each pixel and groups similar colors into groups.</li>
-        <li>It then identifies the most popular groups and picks the most dominant colors from each group.
+        <li>It then identifies the most popular groups and picks the most dominant color from each group.
         </li>
       </ul>
-      <p>The original version was made back in 2008, and it still uses the same underlying algorithm.</p>
       <p>
         <strong className={textClass}>Muller Colors:</strong> An experimental algorithm that adjusts colors to
         align with predetermined harmonious hue and lightness values, creating more aesthetically pleasing
-        palettes.
+        palettes. More info available here: <a href={"https://www.colourlovers.com/blog/2007/09/02/the-muller-formula-or-predictable-color-preferences/"} target={"_blank"}>The Müller Formula</a>.
       </p>
       <p>
         <strong className={textClass}>Use Cases:</strong> I find it useful for getting inspiration for a color palette.

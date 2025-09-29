@@ -7,6 +7,13 @@
   --color-dark-dialog-background: #1C293C;
 }
 
+[data-sonner-toast] [data-close-button] {
+  left: auto !important;
+  right: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -39,9 +46,13 @@ h1 {
   line-height: 1.1;
 }
 
-@media (prefers-color-scheme: light) {
+.light {
   a:hover {
     color: #747bff;
+  }
+
+  [data-sonner-toaster][data-sonner-theme=dark] [data-sonner-toast] [data-close-button]:hover {
+    background: white !important;
   }
 }
 
