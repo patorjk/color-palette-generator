@@ -347,11 +347,12 @@ const ColorPaletteGenerator: React.FC = () => {
             <MagicalText text={"Color Palette Generator"} colors={colors} showAdornments={false} animationTime={20}/>
           </h1>
           <p className={`${textSecondaryClass} text-lg`}>
-            Upload an image to extract its dominant colors
+            Load an image to extract its dominant colors
           </p>
         </div>
 
         {!image ? (
+          <>
           <div
             className={`relative border-3 border-dashed rounded-2xl p-16 text-center transition-all ${cardClass} ${
               dragActive ? 'border-indigo-500 bg-opacity-50' : borderClass
@@ -380,6 +381,27 @@ const ColorPaletteGenerator: React.FC = () => {
               Choose File
             </label>
           </div>
+
+            <StandardCard cardClass={cardClass} additionalClasses={`mt-8`}>
+              <h3 className={`text-xl font-semibold ${textClass} mb-4`}>What does this do?</h3>
+              <div className="flex flex-col gap-4">
+                This app analyzes an image and then generates a color palette from it. Below you can see a sample palette that would be generated from an
+                image made up of red, yellow, green, and blue. However, rather than have me explain things, just try it for yourself!
+                <div className={"grid grid-cols-5 max-sm:grid-cols-3 gap-4"}>
+                {[{hex:'#ff0000'},{hex:'#ffff00'},{hex:'#00ff00'},{hex:'#0000ff'}].map((color, idx) => (
+                  <div key={idx} className="text-center">
+                    <div
+                      onClick={() => copyColor(color.hex)}
+                      className="w-full h-20 rounded-lg shadow-md mb-2 cursor-pointer"
+                      style={{ backgroundColor: color.hex }}
+                    />
+                    <p className={`text-sm font-mono ${textSecondaryClass}`}>{displayColor(color.hex)}</p>
+                  </div>
+                ))}
+                </div>
+              </div>
+            </StandardCard>
+          </>
         ) : (
           <div>
             <StandardCard cardClass={cardClass} additionalClasses={`flex justify-center relative mb-8 overflow-hidden p-4`}>
