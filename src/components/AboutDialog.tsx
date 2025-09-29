@@ -51,7 +51,7 @@ export function AboutDialog({textClass, cardClass}:AboutDialogProps) {
       </p>
       <p>
         <strong className={textClass}>Use Cases:</strong> I find it useful for getting inspiration for a color palette.
-        The color sets can provide a good starting place a web app / image / etc.
+        The color sets can provide a good starting place for a web app / piece of artwork / etc.
       </p>
       <p>
         <strong className={textClass}>Antidote:</strong> Years ago the owner of a rug website offered me $500

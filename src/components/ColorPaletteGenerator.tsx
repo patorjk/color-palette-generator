@@ -4,6 +4,19 @@ import { Upload, X, RefreshCw, Home, Sun, Moon } from 'lucide-react';
 import {AboutDialog} from "@/components/AboutDialog.tsx";
 import {useTheme} from "@/components/theme/useTheme.ts";
 import {MagicalText} from 'react-halloween';
+import {StandardCard} from './StandardCard'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import {cssColorToRgba} from "../../../color-fader/src/color-parser.ts";
+import { Checkbox } from "@/components/ui/checkbox"
+import {type RgbaColor, rgbaToHsla} from "../../../color-fader";
 
 const colors = ['#9084FF','#E40078']
 
@@ -92,6 +105,7 @@ const ColorPaletteGenerator: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const [, setIsProcessing] = useState(false);// TODO: use processing variable?
   const [isMuller, setIsMuller] = useState(false);
+  const [colorType, setColorType] = useState('hex');
   const [isHighVariety, setIsHighVariety] = useState(false);
   const [numColors, setNumColors] = useState(10);
   const { theme, setTheme } = useTheme();
@@ -105,6 +119,10 @@ const ColorPaletteGenerator: React.FC = () => {
   const goHome = () => {
     window.location.href = "https://patorjk.com/";
   }
+
+  const handleColorTypeChange = useCallback((value:string) => {
+    setColorType(value);
+  }, []);
 
   const analyzeImage = useCallback((imgElement: HTMLImageElement) => {
     const canvas = document.createElement('canvas');
@@ -244,7 +262,7 @@ const ColorPaletteGenerator: React.FC = () => {
       setImage(e.target?.result as string);
     };
     reader.readAsDataURL(file);
-  }, [analyzeImage]);
+  }, []);
 
   useEffect(() => {
     if (image) {
@@ -255,7 +273,20 @@ const ColorPaletteGenerator: React.FC = () => {
       };
       img.src = image;
     }
-  }, [image, isHighVariety]);
+  }, [analyzeImage, image, isHighVariety]);
+
+  const displayColor = useCallback((hexString: string) => {
+    if (colorType === 'rgb') {
+      const color: RgbaColor = cssColorToRgba(hexString);
+      return `rgb(${color.r}, ${color.g}, ${color.b})`;
+    } else if (colorType === 'hsl') {
+      const color: RgbaColor = cssColorToRgba(hexString);
+      const hslColor = rgbaToHsla(color);
+      return `hsl(${hslColor.h}, ${hslColor.s}%, ${hslColor.l}%)`;
+    } else {
+      return hexString;
+    }
+  }, [colorType]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -284,12 +315,12 @@ const ColorPaletteGenerator: React.FC = () => {
   };
 
   const bgClass = darkMode
-    ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
+    ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'
     : 'bg-gradient-to-br from-indigo-50 via-white to-purple-50';
-  const cardClass = darkMode ? 'bg-gray-800' : 'bg-white';
-  const textClass = darkMode ? 'text-gray-100' : 'text-gray-800';
-  const textSecondaryClass = darkMode ? 'text-gray-400' : 'text-gray-600';
-  const borderClass = darkMode ? 'border-gray-600' : 'border-gray-300';
+  const cardClass = darkMode ? 'bg-slate-800' : 'bg-white';
+  const textClass = darkMode ? 'text-slate-100' : 'text-slate-800';
+  const textSecondaryClass = darkMode ? 'text-slate-400' : 'text-slate-600';
+  const borderClass = darkMode ? 'border-slate-600' : 'border-slate-300';
 
   return (
     <div className={`min-h-screen ${bgClass} p-8 transition-colors duration-300 w-full`}>
@@ -335,7 +366,7 @@ const ColorPaletteGenerator: React.FC = () => {
           </div>
         ) : (
           <div>
-            <div className={`flex justify-center relative mb-8 rounded-2xl overflow-hidden shadow-2xl ${cardClass} p-4`}>
+            <StandardCard cardClass={cardClass} additionalClasses={`flex justify-center relative mb-8 overflow-hidden p-4`}>
               <button
                 onClick={() => {
                   setImage(null);
@@ -349,52 +380,73 @@ const ColorPaletteGenerator: React.FC = () => {
                 <X className={`w-5 h-5 ${textSecondaryClass}`} />
               </button>
               <img src={image} alt="Uploaded" className="w-auto h-auto align-self justify-self rounded-lg"/>
-            </div>
+            </StandardCard>
 
             {normalPalette.length > 0 && (
               <div className="space-y-8">
-                <div className={`${cardClass} rounded-2xl p-6 shadow-lg`}>
+                <StandardCard cardClass={cardClass}>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className={`text-xl font-semibold ${textClass}`}>Settings</h3>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-4 flex  flex-row items-start justify-around max-md:flex-col max-md:gap-4">
                     <div className="flex items-center gap-4">
-                      <label className={`${textClass} font-medium`}>Number of colors:</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="20"
-                        value={numColors}
-                        onChange={(e) => setNumColors(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
-                        className={`px-3 py-2 rounded-lg border ${borderClass} ${darkMode ? 'bg-gray-700 text-white' : 'bg-white'}`}
-                      />
+
+                      <div className="space-y-2">
+                        <Label htmlFor="numOfColors">Number of colors:</Label>
+                        <div className="flex items-center justify-center space-x-2">
+                          <Input
+                            id={"numOfColors"}
+                            type="number"
+                            min="1"
+                            max="20"
+                            value={numColors}
+                            onChange={(e) => setNumColors(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                            className={`px-3 w-[120px] py-2 rounded-lg border ${borderClass} ${darkMode ? 'bg-slate-700 text-white' : 'bg-white'}`}
+                          />
+                        </div>
+                      </div>
+
                     </div>
-                    <div className="flex items-center gap-4">
-                      <label className={`flex items-center gap-2 ${textClass} font-medium cursor-pointer`}>
-                        <input
-                          type="checkbox"
-                          checked={isMuller}
-                          onChange={(e) => setIsMuller(e.target.checked)}
-                          className="w-5 h-5 rounded"
-                        />
-                        Use Muller Colors algorithm
-                      </label>
+                    <div className="flex flex-col justify-start gap-4">
+                      <div className="flex flex-row gap-4">
+                        <div className="flex  gap-3">
+                          <Checkbox id="muller"                             checked={isMuller}
+                                    onCheckedChange={(checked:boolean) => setIsMuller(checked)} />
+                          <Label htmlFor="muller" className={'cursor-pointer'}>Create new scratch file from selection</Label>
+                        </div>
+                      </div>
+                      <div className="flex  gap-4">
+
+                        <div className="flex gap-3">
+                          <Checkbox id="variety"                             checked={isHighVariety}
+                                    onCheckedChange={(checked:boolean) => setIsHighVariety(checked)} />
+                          <Label htmlFor="variety" className={'cursor-pointer'}>Use higher variety algorithm</Label>
+                        </div>
+
+                      </div>
                     </div>
+
                     <div className="flex items-center gap-4">
-                      <label className={`flex items-center gap-2 ${textClass} font-medium cursor-pointer`}>
-                        <input
-                          type="checkbox"
-                          checked={isHighVariety}
-                          onChange={(e) => setIsHighVariety(e.target.checked)}
-                          className="w-5 h-5 rounded"
-                        />
-                        Use higher variety algorithm
-                      </label>
+                      <div className="space-y-2">
+                        <Label htmlFor="colorType">Color code type:</Label>
+                        <div className="flex items-center justify-center space-x-2">
+                          <Select onValueChange={handleColorTypeChange} value={colorType}>
+                            <SelectTrigger id={'colorType'} className="w-[200px]">
+                              <SelectValue placeholder="Select an option"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="hex">Hex</SelectItem>
+                              <SelectItem value="hsl">HSL</SelectItem>
+                              <SelectItem value="rgb">RGB</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </StandardCard>
 
-                <div className={`${cardClass} rounded-2xl p-6 shadow-lg`}>
+                <StandardCard cardClass={cardClass}>
                   <h3 className={`text-xl font-semibold ${textClass} mb-4`}>Normal Palette</h3>
                   <div className="grid grid-cols-5 max-sm:grid-cols-3 gap-4">
                     {normalPalette.map((color, idx) => (
@@ -403,13 +455,13 @@ const ColorPaletteGenerator: React.FC = () => {
                           className="w-full h-20 rounded-lg shadow-md mb-2"
                           style={{ backgroundColor: color.hex }}
                         />
-                        <p className={`text-sm font-mono ${textSecondaryClass}`}>{color.hex}</p>
+                        <p className={`text-sm font-mono ${textSecondaryClass}`}>{displayColor(color.hex)}</p>
                       </div>
                     ))}
                   </div>
-                </div>
+                </StandardCard>
 
-                <div className={`${cardClass} rounded-2xl p-6 shadow-lg`}>
+                <StandardCard cardClass={cardClass}>
                   <h3 className={`text-xl font-semibold ${textClass} mb-4`}>Complementary Palette</h3>
                   <div className="grid grid-cols-5 max-sm:grid-cols-3 gap-4">
                     {complementaryPalette.map((color, idx) => (
@@ -418,13 +470,13 @@ const ColorPaletteGenerator: React.FC = () => {
                           className="w-full h-20 rounded-lg shadow-md mb-2"
                           style={{ backgroundColor: color.hex }}
                         />
-                        <p className={`text-sm font-mono ${textSecondaryClass}`}>{color.hex}</p>
+                        <p className={`text-sm font-mono ${textSecondaryClass}`}>{displayColor(color.hex)}</p>
                       </div>
                     ))}
                   </div>
-                </div>
+                </StandardCard>
 
-                <div className={`${cardClass} rounded-2xl p-6 shadow-lg`}>
+                <StandardCard cardClass={cardClass}>
                   <h3 className={`text-xl font-semibold ${textClass} mb-4 flex items-center gap-2`}>
                     <RefreshCw className="w-5 h-5" />
                     Adjust Hue
@@ -435,9 +487,9 @@ const ColorPaletteGenerator: React.FC = () => {
                     max="100"
                     value={hueOffset * 100}
                     onChange={(e) => setHueOffset(parseInt(e.target.value) / 100)}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                   />
-                </div>
+                </StandardCard>
               </div>
             )}
           </div>
