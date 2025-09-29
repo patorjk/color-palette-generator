@@ -241,16 +241,21 @@ const ColorPaletteGenerator: React.FC = () => {
     setIsProcessing(true);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        setImage(e.target?.result as string);
-        analyzeImage(img);
-        setIsProcessing(false);
-      };
-      img.src = e.target?.result as string;
+      setImage(e.target?.result as string);
     };
     reader.readAsDataURL(file);
   }, [analyzeImage]);
+
+  useEffect(() => {
+    if (image) {
+      const img = new Image();
+      img.onload = () => {
+        analyzeImage(img);
+        setIsProcessing(false);
+      };
+      img.src = image;
+    }
+  }, [image, isHighVariety]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();

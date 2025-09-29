@@ -39,19 +39,19 @@ export function AboutDialog({textClass, cardClass}:AboutDialogProps) {
         <strong className={textClass}>How it works:</strong>
       </p>
       <ul className="list-disc list-inside space-y-2 ml-4">
-        <li>The app analyzes each pixel and groups similar colors into "buckets".</li>
-        <li>It then identifies the most "filled" buckets and picks the best color from the bucket to represent
-          that bucket based on the colors inside of it.
+        <li>The app analyzes each pixel and groups similar colors into groups.</li>
+        <li>It then identifies the most popular groups and picks the most dominant colors from each group.
         </li>
       </ul>
+      <p>The original version was made back in 2008, and it still uses the same underlying algorithm.</p>
       <p>
         <strong className={textClass}>Muller Colors:</strong> An experimental algorithm that adjusts colors to
         align with predetermined harmonious hue and lightness values, creating more aesthetically pleasing
         palettes.
       </p>
       <p>
-        <strong className={textClass}>Use Cases:</strong> Perfect for web designers, digital artists, and anyone
-        looking to extract color schemes from photographs, artwork, or design inspiration.
+        <strong className={textClass}>Use Cases:</strong> I find it useful for getting inspiration for a color palette.
+        The color sets can provide a good starting place a web app / image / etc.
       </p>
       <p>
         <strong className={textClass}>Antidote:</strong> Years ago the owner of a rug website offered me $500
