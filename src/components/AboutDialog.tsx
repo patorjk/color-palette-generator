@@ -46,17 +46,18 @@ export function AboutDialog({textClass, cardClass}:AboutDialogProps) {
       <p>
         <strong className={textClass}>Muller Colors:</strong> An experimental algorithm that adjusts colors to
         align with predetermined harmonious hue and lightness values, creating more aesthetically pleasing
-        palettes. More info available here: <a href={"https://www.colourlovers.com/blog/2007/09/02/the-muller-formula-or-predictable-color-preferences/"} target={"_blank"}>The Müller Formula</a>.
+        palettes. More info available here: <a href={"https://patorjk.com/blog/2010/06/24/muller-images-experiment/"} target={"_blank"}>The Müller Formula</a>.
       </p>
       <p>
         <strong className={textClass}>Use Cases:</strong> I find it useful for getting inspiration for a color palette.
         The color sets can provide a good starting place for a web app / piece of artwork / etc.
       </p>
       <p>
-        <strong className={textClass}>Antidote:</strong> Years ago the owner of a rug website offered me $500
-        for the algorithm behind the palette generation. He said it was the best of all the ones he tried.
-        Anyway, the app remains free to use, no $500 necessary. Hopefully it's output can be of some benefit to
-        you.
+        <strong className={textClass}>Anecdote:</strong> Years ago, the owner of a rug website reached out about the
+        algorithm behind the palette generation. He said it was the best of all the ones he'd tried and asked if he
+        could use it for his website. I found this amusing since I didn't really know much about palette generation
+        before building this tool, I just made it to get color palette inspiration for my own projects.
+        It was validating to hear that it stood on its own, though. Hopefully its output can be of some benefit to you as well.
       </p>
     </>
   );
@@ -77,13 +78,13 @@ export function AboutDialog({textClass, cardClass}:AboutDialogProps) {
           <DialogTrigger asChild>
             {button}
           </DialogTrigger>
-          <DialogContent className="dark:bg-dark-dialog-background sm:max-w-[425px]">
+          <DialogContent className="dark:bg-dark-dialog-background md:max-w-2xl max-sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>About This App</DialogTitle>
               <DialogDescription>
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4">
+            <div className="grid gap-4 max-h-[500px] overflow-auto">
               {content}
             </div>
             <DialogFooter>
