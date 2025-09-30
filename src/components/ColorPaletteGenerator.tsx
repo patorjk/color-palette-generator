@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Home, Moon, RefreshCw, Sun, Upload, X } from "lucide-react";
+import { Home, Moon, RefreshCw, Sun } from "lucide-react";
 import { AboutDialog } from "@/components/AboutDialog.tsx";
 import { useTheme } from "@/components/theme/useTheme.ts";
 import { MagicalText } from "react-halloween";
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ColorData } from "@/components/types.ts";
 import PaletteDisplay from "@/components/PaletteDisplay.tsx";
+import ImageLoader from "@/components/ImageLoader.tsx";
 
 const colors = ["#9084FF", "#E40078"];
 
@@ -116,7 +117,7 @@ const ColorPaletteGenerator: React.FC = () => {
     [],
   );
   const [hueOffset, setHueOffset] = useState(0);
-  const [dragActive, setDragActive] = useState(false);
+
   const [, setIsProcessing] = useState(false); // TODO: use processing variable?
   const [isMuller, setIsMuller] = useState(false);
   const [colorType, setColorType] = useState("hex");
@@ -303,30 +304,12 @@ const ColorPaletteGenerator: React.FC = () => {
     }
   }, [analyzeImage, image, isHighVariety]);
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleImageUpload(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleImageUpload(e.target.files[0]);
-    }
+  const handleClearImage = () => {
+    setImage(null);
+    setNormalPalette([]);
+    setComplementaryPalette([]);
+    setBuckets([]);
+    setHueOffset(0);
   };
 
   const bgClass = darkMode
@@ -358,199 +341,160 @@ const ColorPaletteGenerator: React.FC = () => {
           </p>
         </div>
 
-        {!image ? (
-          <>
-            <div
-              className={`mb-8 relative border-3 border-dashed rounded-2xl p-16 text-center transition-all ${cardClass} ${
-                dragActive ? "border-indigo-500 bg-opacity-50" : borderClass
-              }`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-            >
-              <Upload
-                className={`w-16 h-16 mx-auto mb-4 ${textSecondaryClass}`}
-              />
-              <h3 className={`text-xl font-semibold ${textClass} mb-2`}>
-                Drop your image here
-              </h3>
-              <p className={`${textSecondaryClass} mb-6`}>or click to browse</p>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileInput}
-                className="hidden"
-                id="file-upload"
-              />
-              <label
-                htmlFor="file-upload"
-                className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg cursor-pointer hover:bg-indigo-700 transition-colors"
-              >
-                Choose File
-              </label>
-            </div>
+        <ImageLoader
+          image={image}
+          handleImageUpload={handleImageUpload}
+          handleClearImage={handleClearImage}
+        />
 
-            <PaletteDisplay
-              palette={[
-                { r: 255, g: 0, b: 0, hex: "#ff0000" },
-                { r: 255, g: 255, b: 0, hex: "#ffff00" },
-                { r: 0, g: 255, b: 0, hex: "#00ff00" },
-                { r: 0, g: 0, b: 255, hex: "#0000ff" },
-              ]}
-              colorType={colorType}
-              title={"What does this do?"}
-              description={
-                "This app analyzes an image and then generates a color palette from it. Below you can see a sample palette that would be generated from an image made up of red, yellow, green, and blue. However, rather than have me explain things, just try it for yourself!"
-              }
-            />
-          </>
-        ) : (
-          <div>
-            <StandardCard
-              additionalClasses={`flex justify-center relative mb-8 overflow-hidden p-4`}
-            >
-              <button
-                onClick={() => {
-                  setImage(null);
-                  setNormalPalette([]);
-                  setComplementaryPalette([]);
-                  setBuckets([]);
-                  setHueOffset(0);
-                }}
-                className={`absolute top-6 right-6 z-10 p-2 ${cardClass} rounded-full shadow-lg hover:opacity-80 transition-opacity`}
-              >
-                <X className={`w-5 h-5 ${textSecondaryClass}`} />
-              </button>
-              <img
-                src={image}
-                alt="Uploaded"
-                className="w-auto h-auto align-self justify-self rounded-lg"
+        <div>
+          {!image ? (
+            <>
+              <PaletteDisplay
+                palette={[
+                  { r: 255, g: 0, b: 0, hex: "#ff0000" },
+                  { r: 255, g: 255, b: 0, hex: "#ffff00" },
+                  { r: 0, g: 255, b: 0, hex: "#00ff00" },
+                  { r: 0, g: 0, b: 255, hex: "#0000ff" },
+                ]}
+                colorType={colorType}
+                title={"What does this do?"}
+                description={
+                  "This app analyzes an image and then generates a color palette from it. Below you can see a sample palette that would be generated from an image made up of red, yellow, green, and blue. However, rather than have me explain things, just try it for yourself!"
+                }
               />
-            </StandardCard>
-
-            {normalPalette.length > 0 && (
-              <div className="space-y-8">
-                <StandardCard>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className={`text-xl font-semibold ${textClass}`}>
-                      Settings
-                    </h3>
-                  </div>
-                  <div className="space-y-4 flex  flex-row items-start justify-around max-md:flex-col max-md:gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="numOfColors">Number of colors:</Label>
-                        <div className="flex items-center justify-center space-x-2">
-                          <Input
-                            id={"numOfColors"}
-                            type="number"
-                            min="1"
-                            max="20"
-                            value={numColors}
-                            onChange={(e) =>
-                              setNumColors(
-                                Math.max(
-                                  1,
-                                  Math.min(20, parseInt(e.target.value) || 1),
-                                ),
-                              )
-                            }
-                            className={`px-3 w-[120px] py-2 rounded-lg border ${borderClass} ${darkMode ? "bg-slate-700 text-white" : "bg-white"}`}
-                          />
-                        </div>
-                      </div>
+            </>
+          ) : (
+            <>
+              {normalPalette.length > 0 && (
+                <div className="space-y-8">
+                  <StandardCard>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className={`text-xl font-semibold ${textClass}`}>
+                        Settings
+                      </h3>
                     </div>
-                    <div className="flex flex-col justify-start gap-4">
-                      <div className="flex flex-row gap-4">
-                        <div className="flex  gap-3">
-                          <Checkbox
-                            id="muller"
-                            checked={isMuller}
-                            onCheckedChange={(checked: boolean) =>
-                              setIsMuller(checked)
-                            }
-                          />
-                          <Label htmlFor="muller" className={"cursor-pointer"}>
-                            Use Müller Colors algorithm
-                          </Label>
+                    <div className="space-y-4 flex  flex-row items-start justify-around max-md:flex-col max-md:gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="numOfColors">Number of colors:</Label>
+                          <div className="flex items-center justify-center space-x-2">
+                            <Input
+                              id={"numOfColors"}
+                              type="number"
+                              min="1"
+                              max="20"
+                              value={numColors}
+                              onChange={(e) =>
+                                setNumColors(
+                                  Math.max(
+                                    1,
+                                    Math.min(20, parseInt(e.target.value) || 1),
+                                  ),
+                                )
+                              }
+                              className={`px-3 w-[120px] py-2 rounded-lg border ${borderClass} ${darkMode ? "bg-slate-700 text-white" : "bg-white"}`}
+                            />
+                          </div>
                         </div>
                       </div>
-                      <div className="flex  gap-4">
-                        <div className="flex gap-3">
-                          <Checkbox
-                            id="variety"
-                            checked={isHighVariety}
-                            onCheckedChange={(checked: boolean) =>
-                              setIsHighVariety(checked)
-                            }
-                          />
-                          <Label htmlFor="variety" className={"cursor-pointer"}>
-                            Use higher variety algorithm
-                          </Label>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="colorType">Color code type:</Label>
-                        <div className="flex items-center justify-center space-x-2">
-                          <Select
-                            onValueChange={handleColorTypeChange}
-                            value={colorType}
-                          >
-                            <SelectTrigger
-                              id={"colorType"}
-                              className="w-[200px]"
+                      <div className="flex flex-col justify-start gap-4">
+                        <div className="flex flex-row gap-4">
+                          <div className="flex  gap-3">
+                            <Checkbox
+                              id="muller"
+                              checked={isMuller}
+                              onCheckedChange={(checked: boolean) =>
+                                setIsMuller(checked)
+                              }
+                            />
+                            <Label
+                              htmlFor="muller"
+                              className={"cursor-pointer"}
                             >
-                              <SelectValue placeholder="Select an option" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="hex">Hex</SelectItem>
-                              <SelectItem value="hsl">HSL</SelectItem>
-                              <SelectItem value="rgb">RGB</SelectItem>
-                            </SelectContent>
-                          </Select>
+                              Use Müller Colors algorithm
+                            </Label>
+                          </div>
+                        </div>
+                        <div className="flex  gap-4">
+                          <div className="flex gap-3">
+                            <Checkbox
+                              id="variety"
+                              checked={isHighVariety}
+                              onCheckedChange={(checked: boolean) =>
+                                setIsHighVariety(checked)
+                              }
+                            />
+                            <Label
+                              htmlFor="variety"
+                              className={"cursor-pointer"}
+                            >
+                              Use higher variety algorithm
+                            </Label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="colorType">Color code type:</Label>
+                          <div className="flex items-center justify-center space-x-2">
+                            <Select
+                              onValueChange={handleColorTypeChange}
+                              value={colorType}
+                            >
+                              <SelectTrigger
+                                id={"colorType"}
+                                className="w-[200px]"
+                              >
+                                <SelectValue placeholder="Select an option" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="hex">Hex</SelectItem>
+                                <SelectItem value="hsl">HSL</SelectItem>
+                                <SelectItem value="rgb">RGB</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </StandardCard>
+                  </StandardCard>
 
-                <PaletteDisplay
-                  palette={normalPalette}
-                  title={"Normal Palette"}
-                  colorType={colorType}
-                />
-                <PaletteDisplay
-                  palette={complementaryPalette}
-                  title={"Complementary Palette"}
-                  colorType={colorType}
-                />
-
-                <StandardCard>
-                  <h3
-                    className={`text-xl font-semibold ${textClass} mb-4 flex items-center gap-2`}
-                  >
-                    <RefreshCw className="w-5 h-5" />
-                    Adjust Hue
-                  </h3>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={hueOffset * 100}
-                    onChange={(e) =>
-                      setHueOffset(parseInt(e.target.value) / 100)
-                    }
-                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  <PaletteDisplay
+                    palette={normalPalette}
+                    title={"Normal Palette"}
+                    colorType={colorType}
                   />
-                </StandardCard>
-              </div>
-            )}
-          </div>
-        )}
+                  <PaletteDisplay
+                    palette={complementaryPalette}
+                    title={"Complementary Palette"}
+                    colorType={colorType}
+                  />
+
+                  <StandardCard>
+                    <h3
+                      className={`text-xl font-semibold ${textClass} mb-4 flex items-center gap-2`}
+                    >
+                      <RefreshCw className="w-5 h-5" />
+                      Adjust Hue
+                    </h3>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={hueOffset * 100}
+                      onChange={(e) =>
+                        setHueOffset(parseInt(e.target.value) / 100)
+                      }
+                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </StandardCard>
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
         <div className="mt-12 text-center flex flex-cols align-center justify-center space-x-4">
           <AboutDialog cardClass={cardClass} textClass={textClass} />
